@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Portfolio Control Centre</title>
+
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+
+<body>
+    <header class="admin-header">
+        <div>
+            <p class="eyebrow">E-PORTIFOLIO / SYSTEM CONTROL</p>
+            <h1>Control Centre</h1>
+            <p>Manage the content displayed on your portfolio.</p>
+        </div>
+
+        <a href="../index.html" class="view-site">
+            View Portfolio ↗
+        </a>
+    </header>
+
+    <main class="admin-main">
+
+        <section class="overview">
+            <div class="stat-card">
+                <span>Total Projects</span>
+                <strong id="total-projects">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Total Skills</span>
+                <strong id="total-skills">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Achievements</span>
+                <strong id="total-achievements">0</strong>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">CONTENT MANAGEMENT</p>
+                    <h2>Projects</h2>
+                </div>
+            </div>
+
+            <form id="project-form">
+                <div class="form-grid">
+
+                    <label>
+                        Project title
+                        <input
+                            type="text"
+                            id="project-title"
+                            placeholder="e.g. Project Gamma"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        Category
+                        <input
+                            type="text"
+                            id="project-category"
+                            placeholder="e.g. Mechanical Design"
+                            required
+                        >
+                    </label>
+
+                    <label class="full-width">
+                        Description
+                        <textarea
+                            id="project-description"
+                            placeholder="Describe the project..."
+                            rows="3"
+                            required
+                        ></textarea>
+                    </label>
+
+                    <label class="full-width">
+                        Technologies
+                        <input
+                            type="text"
+                            id="project-technologies"
+                            placeholder="Python, SolidWorks, Arduino"
+                            required
+                        >
+                        <small>Separate technologies with commas.</small>
+                    </label>
+
+                    <label>
+                        Status
+                        <select id="project-status">
+                            <option value="Concept">Concept</option>
+                            <option value="Prototype">Prototype</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </label>
+
+                </div>
+
+                <button type="submit" class="primary-button">
+                    Add Test Project
+                </button>
+
+                <p id="form-message" role="status"></p>
+            </form>
+        </section>
+
+        <section class="panel">
+            <p class="eyebrow">CURRENT RECORDS</p>
+            <h2>Project Inventory</h2>
+
+            <div id="admin-projects"></div>
+        </section>
+
+    </main>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>

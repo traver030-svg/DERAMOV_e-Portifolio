@@ -1,0 +1,126 @@
+
+/* =================================
+   PORTFOLIO ENGINE — TEST ENVIRONMENT
+   ================================= */
+
+:root {
+    --background: #0a0d12;
+    --surface: #121821;
+    --surface-hover: #192330;
+    --text-primary: #edf2f7;
+    --text-secondary: #9ba9b9;
+    --accent: #66e3c4;
+    --border: rgba(255, 255, 255, 0.10);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.6;
+}
+
+header {
+    padding: 80px 8%;
+    border-bottom: 1px solid var(--border);
+    background:
+        radial-gradient(ellipse at top right, #17302f 0%, transparent 45%),
+        var(--background);
+}
+
+header > p:first-child {
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+h1 {
+    margin: 20px 0 10px;
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -2px;
+}
+
+header p {
+    color: var(--text-secondary);
+}
+
+main {
+    width: min(1100px, 84%);
+    margin: 60px auto;
+}
+
+section {
+    margin-bottom: 70px;
+}
+
+section h2 {
+    margin-bottom: 25px;
+    font-size: 1.7rem;
+    letter-spacing: -0.5px;
+}
+
+#projects-container,
+#skills-container,
+#achievements-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 20px;
+}
+
+.project-card,
+.skill-card,
+.achievement-card {
+    padding: 25px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition:
+        transform 200ms ease,
+        background 200ms ease,
+        border-color 200ms ease;
+}
+
+.project-card:hover,
+.skill-card:hover,
+.achievement-card:hover {
+    transform: translateY(-4px);
+    background: var(--surface-hover);
+    border-color: var(--accent);
+}
+
+article h3 {
+    margin-top: 0;
+    color: var(--accent);
+}
+
+article p {
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+    header {
+        padding: 55px 7%;
+    }
+
+    main {
+        width: 86%;
+        margin: 40px auto;
+    }
+
+    section {
+        margin-bottom: 50px;
+    }
+}
