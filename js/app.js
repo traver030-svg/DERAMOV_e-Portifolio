@@ -1,8 +1,9 @@
 
+
 "use strict";
 
-// 1. Read and display the profile
-const profile = portfolioData.profile;
+// 1. Read and display the saved profile
+const profile = getProfile();
 
 document.getElementById("profile-name").textContent = profile.name;
 document.getElementById("profile-title").textContent = profile.title;
@@ -12,7 +13,7 @@ document.getElementById("profile-tagline").textContent = profile.tagline;
 // 2. Display projects
 const projectsContainer = document.getElementById("projects-container");
 
-portfolioData.projects.forEach((project) => {
+getProjects().forEach((project) => {
     const card = document.createElement("article");
     card.className = "project-card";
 
@@ -39,7 +40,7 @@ portfolioData.projects.forEach((project) => {
 // 3. Display skills
 const skillsContainer = document.getElementById("skills-container");
 
-portfolioData.skills.forEach((skill) => {
+getSkills().forEach((skill) => {
     const card = document.createElement("article");
     card.className = "skill-card";
 
@@ -60,7 +61,7 @@ portfolioData.skills.forEach((skill) => {
 // 4. Display achievements
 const achievementsContainer = document.getElementById("achievements-container");
 
-portfolioData.achievements.forEach((achievement) => {
+getAchievements().forEach((achievement) => {
     const card = document.createElement("article");
     card.className = "achievement-card";
 

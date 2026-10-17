@@ -52,3 +52,116 @@ const portfolioData = {
         }
     ]
 };
+
+const PORTFOLIO_STORAGE_KEY = "ePortfolioProjects";
+
+function getProjects() {
+    const savedProjects = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
+
+    if (savedProjects !== null) {
+        try {
+            const parsedProjects = JSON.parse(savedProjects);
+
+            if (Array.isArray(parsedProjects)) {
+                return parsedProjects;
+            }
+        } catch (error) {
+            console.error("Could not read saved projects:", error);
+        }
+    }
+
+    return portfolioData.projects.map((project) => ({
+        ...project,
+        technologies: [...project.technologies]
+    }));
+}
+
+function saveProjects(projects) {
+    localStorage.setItem(
+        PORTFOLIO_STORAGE_KEY,
+        JSON.stringify(projects)
+    );
+}
+
+const PORTFOLIO_SKILLS_KEY = "ePortfolioSkills";
+const PORTFOLIO_ACHIEVEMENTS_KEY = "ePortfolioAchievements";
+
+function getSkills() {
+    const saved = localStorage.getItem(PORTFOLIO_SKILLS_KEY);
+
+    if (saved !== null) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (error) {
+            console.error("Could not read saved skills:", error);
+        }
+    }
+
+    return portfolioData.skills.map(skill => ({ ...skill }));
+}
+
+function saveSkills(skills) {
+    localStorage.setItem(PORTFOLIO_SKILLS_KEY, JSON.stringify(skills));
+}
+
+function getAchievements() {
+    const saved = localStorage.getItem(PORTFOLIO_ACHIEVEMENTS_KEY);
+
+    if (saved !== null) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (error) {
+            console.error("Could not read saved achievements:", error);
+        }
+    }
+
+    return portfolioData.achievements.map(achievement => ({
+        ...achievement
+    }));
+}
+
+function saveAchievements(achievements) {
+    localStorage.setItem(
+        PORTFOLIO_ACHIEVEMENTS_KEY,
+        JSON.stringify(achievements)
+    );
+}
+
+
+/* PROFILE STORAGE */
+const PORTFOLIO_PROFILE_KEY = "ePortfolioProfile";
+
+function getProfile() {
+    const saved = localStorage.getItem(PORTFOLIO_PROFILE_KEY);
+
+    if (saved !== null) {
+        try {
+            const parsed = JSON.parse(saved);
+
+            if (
+                parsed &&
+                typeof parsed === "object" &&
+                !Array.isArray(parsed) &&
+                typeof parsed.name === "string" &&
+                typeof parsed.title === "string" &&
+                typeof parsed.tagline === "string" &&
+                typeof parsed.location === "string"
+            ) {
+                return parsed;
+            }
+        } catch (error) {
+            console.error("Could not read saved profile:", error);
+        }
+    }
+
+    return { ...portfolioData.profile };
+}
+
+function saveProfile(profile) {
+    localStorage.setItem(
+        PORTFOLIO_PROFILE_KEY,
+        JSON.stringify(profile)
+    );
+}

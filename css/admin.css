@@ -208,3 +208,25 @@ button {
         margin-top: 25px;
     }
 }
+
+.delete-button {
+    margin-top: 12px;
+    padding: 9px 16px;
+    border: 1px solid #e05252;
+    border-radius: 8px;
+    background: transparent;
+    color: #ff7777;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.delete-button:hover {
+    background: #e05252;
+    color: #ffffff;
+}
+
+.delete-button:focus-visible {
+    outline: 2px solid #ff7777;
+    outline-offset: 3px;
+}
