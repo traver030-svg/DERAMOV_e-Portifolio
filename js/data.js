@@ -1,10 +1,10 @@
 
 const portfolioData = {
     profile: {
-        name: "Alex Engineer",
-        title: "Mechanical Engineer & Technology Innovator",
-        tagline: "Turning physical principles into engineered solutions.",
-        location: "Test Location"
+        name: "TRAVER DERA",
+        title: "Aspiring Mechanical Engineer | Smart Manufacturing & Automation",
+        tagline: "Exploring mechanical design, intelligent systems, automation and emerging technologies.",
+        location: "Faridabad,Haryana-India"
     },
 
     projects: [
