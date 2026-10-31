@@ -405,61 +405,92 @@ function renderAchievements() {
         const year = document.createElement("p");
         year.textContent = "Year: " + achievement.year;
 
-        
-const editButton = document.createElement("button");
-editButton.type = "button";
-editButton.textContent = "Edit";
-editButton.className = "edit-button";
+        // EDIT BUTTON
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.textContent = "Edit";
+        editButton.className = "edit-button";
 
-editButton.addEventListener("click", () => {
-    document.getElementById("achievement-title").value =
-        achievement.title;
+        editButton.addEventListener("click", () => {
+            document.getElementById("achievement-title").value =
+                achievement.title;
 
-    document.getElementById("achievement-year").value =
-        achievement.year;
+            document.getElementById("achievement-year").value =
+                achievement.year;
 
-    document.getElementById("achievement-description").value =
-        achievement.description;
+            document.getElementById("achievement-description").value =
+                achievement.description;
 
-    editingAchievementId = achievement.id;
-    cancelAchievementEdit.hidden = false;
+            editingAchievementId = achievement.id;
+            cancelAchievementEdit.hidden = false;
 
-    const submitButton = achievementForm.querySelector(
-        'button[type="submit"]'
-    );
+            const submitButton = achievementForm.querySelector(
+                'button[type="submit"]'
+            );
 
-    if (submitButton) {
-        submitButton.textContent = "Update Achievement";
-    }
+            if (submitButton) {
+                submitButton.textContent = "Update Achievement";
+            }
 
-    achievementMessage.textContent =
-        `Editing "${achievement.title}". Change the fields and submit to save.`;
+            achievementMessage.textContent =
+                `Editing "${achievement.title}". Change the fields and submit to save.`;
 
-    achievementForm.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-});
+            achievementForm.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        });
 
+        // DELETE BUTTON — SUPABASE
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.textContent = "Delete";
         deleteButton.className = "delete-button";
 
-        deleteButton.addEventListener("click", () => {
+        deleteButton.addEventListener("click", async () => {
             const confirmed = confirm(
                 `Delete achievement "${achievement.title}"?`
             );
 
             if (!confirmed) return;
 
-            achievements = achievements.filter(
-                (item) => item.id !== achievement.id
-            );
+            deleteButton.disabled = true;
 
-            saveAchievements(achievements);
-            renderAchievements();
-            renderStatistics();
+            try {
+                const { error } = await window.portfolioSupabase
+                    .from("achievements")
+                    .delete()
+                    .eq("id", achievement.id);
+
+                if (error) throw error;
+
+                achievements = achievements.filter(
+                    (item) => item.id !== achievement.id
+                );
+
+                try {
+                    saveAchievements(achievements);
+                } catch (storageError) {
+                    console.warn(
+                        "Local achievement cache could not be updated:",
+                        storageError
+                    );
+                }
+
+                renderAchievements();
+                renderStatistics();
+
+                achievementMessage.textContent =
+                    `Achievement "${achievement.title}" deleted successfully.`;
+
+            } catch (error) {
+                console.error("Achievement deletion failed:", error);
+
+                achievementMessage.textContent =
+                    "Could not delete achievement from Supabase. Check your connection and permissions.";
+
+                deleteButton.disabled = false;
+            }
         });
 
         row.append(title, description, year, editButton, deleteButton);
