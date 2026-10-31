@@ -289,62 +289,93 @@ function renderSkills() {
         const level = document.createElement("p");
         level.textContent = "Proficiency: " + skill.level;
 
-        
-const editButton = document.createElement("button");
-editButton.type = "button";
-editButton.textContent = "Edit";
-editButton.className = "edit-button";
+        // EDIT BUTTON
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.textContent = "Edit";
+        editButton.className = "edit-button";
 
-editButton.addEventListener("click", () => {
-    document.getElementById("skill-name").value = skill.name;
-    document.getElementById("skill-category").value = skill.category;
-    document.getElementById("skill-level").value = skill.level;
+        editButton.addEventListener("click", () => {
+            document.getElementById("skill-name").value = skill.name;
+            document.getElementById("skill-category").value = skill.category;
+            document.getElementById("skill-level").value = skill.level;
 
-    // Remember which existing skill is being edited.
-    editingSkillId = skill.id;
-    cancelSkillEdit.hidden = false;
+            editingSkillId = skill.id;
+            cancelSkillEdit.hidden = false;
 
-    const submitButton = skillForm.querySelector(
-        'button[type="submit"]'
-    );
+            const submitButton = skillForm.querySelector(
+                'button[type="submit"]'
+            );
 
-    if (submitButton) {
-        submitButton.textContent = "Update Skill";
-    }
+            if (submitButton) {
+                submitButton.textContent = "Update Skill";
+            }
 
-    skillMessage.textContent = `Editing "${skill.name}". Change the fields and submit to save.`;
+            skillMessage.textContent =
+                `Editing "${skill.name}". Change the fields and submit to save.`;
 
-    skillForm.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-});
-const deleteButton = document.createElement("button");
+            skillForm.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        });
+
+        // DELETE BUTTON — SUPABASE
+        const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.textContent = "Delete";
         deleteButton.className = "delete-button";
 
-        deleteButton.addEventListener("click", () => {
+        deleteButton.addEventListener("click", async () => {
             const confirmed = confirm(
                 `Delete skill "${skill.name}"?`
             );
 
             if (!confirmed) return;
 
-            skills = skills.filter(
-                (item) => item.id !== skill.id
-            );
+            deleteButton.disabled = true;
 
-            saveSkills(skills);
-            renderSkills();
-            renderStatistics();
+            try {
+                const { error } = await window.portfolioSupabase
+                    .from("skills")
+                    .delete()
+                    .eq("id", skill.id);
+
+                if (error) throw error;
+
+                skills = skills.filter(
+                    (item) => item.id !== skill.id
+                );
+
+                try {
+                    saveSkills(skills);
+                } catch (storageError) {
+                    console.warn(
+                        "Local skill cache could not be updated:",
+                        storageError
+                    );
+                }
+
+                renderSkills();
+                renderStatistics();
+
+                skillMessage.textContent =
+                    `Skill "${skill.name}" deleted successfully.`;
+
+            } catch (error) {
+                console.error("Skill deletion failed:", error);
+
+                skillMessage.textContent =
+                    "Could not delete skill from Supabase. Check your connection and permissions.";
+
+                deleteButton.disabled = false;
+            }
         });
 
         row.append(name, category, level, editButton, deleteButton);
         skillsContainer.appendChild(row);
     });
 }
-
 
 // ============================================
 // 6. ACHIEVEMENTS INVENTORY
