@@ -2,13 +2,37 @@
 
 "use strict";
 
-// 1. Read and display the saved profile
-const profile = getProfile();
+// 1. Read and display the profile from Supabase
 
-document.getElementById("profile-name").textContent = profile.name;
-document.getElementById("profile-title").textContent = profile.title;
-document.getElementById("profile-tagline").textContent = profile.tagline;
+async function loadPublicProfile() {
+    try {
+        const { data: profile, error } = await window.portfolioSupabase
+            .from("profiles")
+            .select("name, title, tagline")
+            .eq("id", true)
+            .single();
 
+        if (error) {
+            throw error;
+        }
+
+        document.getElementById("profile-name").textContent = profile.name;
+        document.getElementById("profile-title").textContent = profile.title;
+        document.getElementById("profile-tagline").textContent = profile.tagline;
+
+    } catch (error) {
+        console.error("Public profile loading failed:", error);
+
+        // Use existing local data as a fallback
+        const profile = getProfile();
+
+        document.getElementById("profile-name").textContent = profile.name;
+        document.getElementById("profile-title").textContent = profile.title;
+        document.getElementById("profile-tagline").textContent = profile.tagline;
+    }
+}
+
+loadPublicProfile();
 
 // 2. Display projects
 const projectsContainer = document.getElementById("projects-container");
