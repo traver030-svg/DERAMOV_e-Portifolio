@@ -457,12 +457,19 @@ function renderAchievements() {
             deleteButton.disabled = true;
 
             try {
-                const { error } = await window.portfolioSupabase
-                    .from("achievements")
-                    .delete()
-                    .eq("id", achievement.id);
+                const { data, error } = await window.portfolioSupabase
+    .from("achievements")
+    .delete()
+    .eq("id", achievement.id)
+    .select("id");
 
-                if (error) throw error;
+if (error) throw error;
+
+if (!data || data.length === 0) {
+    throw new Error(
+        "Supabase did not delete the achievement. No rows were returned."
+    );
+}
 
                 achievements = achievements.filter(
                     (item) => item.id !== achievement.id
