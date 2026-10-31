@@ -702,11 +702,46 @@ cancelProjectEdit.addEventListener("click", cancelProjectEditing);
 cancelSkillEdit.addEventListener("click", cancelSkillEditing);
 cancelAchievementEdit.addEventListener("click", cancelAchievementEditing);
 
-// ============================================
-// 10. INITIALISE THE DASHBOARD
-// ============================================
+// LOAD PROJECTS FROM SUPABASE
 
-renderProjects();
+async function loadProjectsFromSupabase() {
+    formMessage.textContent = "Loading projects...";
+
+    try {
+        const { data, error } = await window.portfolioSupabase
+            .from("projects")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            throw error;
+        }
+
+        projects = data.map((project) => ({
+            ...project,
+            image: project.image_url || ""
+        }));
+
+        // Keep a local copy for the existing backup system.
+        saveProjects(projects);
+
+        renderProjects();
+        renderStatistics();
+
+        formMessage.textContent =
+            `${projects.length} project(s) loaded from Supabase.`;
+
+    } catch (error) {
+        console.error("Project loading failed:", error);
+
+        formMessage.textContent =
+            "Could not load projects from Supabase. Check your connection and permissions.";
+    }
+}
+// 10. INITIALISE THE DASHBOARD
+
+loadProjectsFromSupabase();
+
 renderSkills();
 renderAchievements();
 renderStatistics();
