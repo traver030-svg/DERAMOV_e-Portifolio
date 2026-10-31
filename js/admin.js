@@ -699,7 +699,9 @@ skillForm.addEventListener("submit", async (event) => {
 // ============================================
 
 
-achievementForm.addEventListener("submit", (event) => {
+// ADD AND EDIT ACHIEVEMENTS — SUPABASE
+
+achievementForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const title = document
@@ -726,61 +728,92 @@ achievementForm.addEventListener("submit", (event) => {
         return;
     }
 
-    if (editingAchievementId !== null) {
-        // Update the existing achievement.
-        const index = achievements.findIndex(
-            (item) => item.id === editingAchievementId
-        );
-
-        if (index === -1) {
-            achievementMessage.textContent =
-                "Could not find the achievement to update. Please select Edit again.";
-            editingAchievementId = null;
-            return;
-        }
-
-        achievements[index] = {
-            ...achievements[index],
-            title,
-            description,
-            year
-        };
-
-        saveAchievements(achievements);
-
-        achievementMessage.textContent =
-            `Achievement "${title}" updated successfully.`;
-    } else {
-        // Normal Add Achievement behaviour.
-        const newAchievement = {
-            id: Date.now(),
-            title,
-            description,
-            year
-        };
-
-        achievements.push(newAchievement);
-        saveAchievements(achievements);
-
-        achievementMessage.textContent =
-            `Achievement "${title}" added successfully.`;
-    }
-
-    editingAchievementId = null;
-    achievementForm.reset();
-
     const submitButton = achievementForm.querySelector(
         'button[type="submit"]'
     );
 
-    if (submitButton) {
-        submitButton.textContent = "Add Achievement";
+    if (submitButton) submitButton.disabled = true;
+
+    achievementMessage.textContent = "Saving achievement...";
+
+    try {
+        const achievementData = {
+            title,
+            description,
+            date: `${year}-01-01`
+        };
+
+        if (editingAchievementId !== null) {
+            const { data, error } = await window.portfolioSupabase
+                .from("achievements")
+                .update(achievementData)
+                .eq("id", editingAchievementId)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            achievements = achievements.map((item) =>
+                item.id === editingAchievementId
+                    ? {
+                        ...data,
+                        year: Number(data.date.slice(0, 4))
+                    }
+                    : item
+            );
+
+            achievementMessage.textContent =
+                `Achievement "${title}" updated successfully.`;
+
+        } else {
+            const { data, error } = await window.portfolioSupabase
+                .from("achievements")
+                .insert(achievementData)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            achievements.unshift({
+                ...data,
+                year: Number(data.date.slice(0, 4))
+            });
+
+            achievementMessage.textContent =
+                `Achievement "${title}" added successfully.`;
+        }
+
+        try {
+            saveAchievements(achievements);
+        } catch (storageError) {
+            console.warn(
+                "Local achievement cache could not be updated:",
+                storageError
+            );
+        }
+
+        editingAchievementId = null;
+        achievementForm.reset();
+
+        if (submitButton) {
+            submitButton.textContent = "Add Achievement";
+        }
+
+        cancelAchievementEdit.hidden = true;
+
+        renderAchievements();
+        renderStatistics();
+
+    } catch (error) {
+        console.error("Achievement save failed:", error);
+
+        achievementMessage.textContent =
+            "Could not save achievement to Supabase. Check your connection and permissions.";
+
+    } finally {
+        if (submitButton) submitButton.disabled = false;
     }
-
-    renderAchievements();
-    renderStatistics();
 });
-
 
 function cancelProjectEditing() {
     editingProjectId = null;
