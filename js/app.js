@@ -94,22 +94,44 @@ loadPublicProjects();
 // 3. Display skills
 const skillsContainer = document.getElementById("skills-container");
 
-getSkills().forEach((skill) => {
-    const card = document.createElement("article");
-    card.className = "skill-card";
+async function loadPublicSkills() {
+    try {
+        const { data: skills, error } = await window.portfolioSupabase
+            .from("skills")
+            .select("*")
+            .eq("published", true)
+            .order("created_at", { ascending: false });
 
-    const name = document.createElement("h3");
-    name.textContent = skill.name;
+        if (error) throw error;
 
-    const category = document.createElement("p");
-    category.textContent = skill.category;
+        skillsContainer.innerHTML = "";
 
-    const level = document.createElement("p");
-    level.textContent = "Level: " + skill.level;
+        skills.forEach((skill) => {
+            const card = document.createElement("article");
+            card.className = "skill-card";
 
-    card.append(name, category, level);
-    skillsContainer.appendChild(card);
-});
+            const name = document.createElement("h3");
+            name.textContent = skill.name;
+
+            const category = document.createElement("p");
+            category.textContent = skill.category || "";
+
+            const level = document.createElement("p");
+            level.textContent = "Level: " + (skill.proficiency || "");
+
+            card.append(name, category, level);
+            skillsContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Public skill loading failed:", error);
+
+        skillsContainer.textContent =
+            "Skills could not be loaded. Please try again later.";
+    }
+}
+
+loadPublicSkills();
 
 
 // 4. Display achievements
