@@ -1087,6 +1087,8 @@ try {
 
 /* PROFILE MANAGEMENT — LOAD AND SAVE */
 
+// PROFILE SETTINGS — SUPABASE
+
 const profileForm = document.getElementById("profile-form");
 const profileNameInput = document.getElementById("profile-name");
 const profileTitleInput = document.getElementById("profile-title");
@@ -1094,16 +1096,44 @@ const profileTaglineInput = document.getElementById("profile-tagline");
 const profileLocationInput = document.getElementById("profile-location");
 const profileMessage = document.getElementById("profile-message");
 
-function loadProfileIntoForm() {
-    const profile = getProfile();
+// Load profile from Supabase
+async function loadProfileIntoForm() {
+    profileMessage.textContent = "Loading profile...";
 
-    profileNameInput.value = profile.name || "";
-    profileTitleInput.value = profile.title || "";
-    profileTaglineInput.value = profile.tagline || "";
-    profileLocationInput.value = profile.location || "";
+    try {
+        const { data: profile, error } = await window.portfolioSupabase
+            .from("profiles")
+            .select("name, title, tagline, location")
+            .eq("id", true)
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        profileNameInput.value = profile.name || "";
+        profileTitleInput.value = profile.title || "";
+        profileTaglineInput.value = profile.tagline || "";
+        profileLocationInput.value = profile.location || "";
+
+        // Keep local copy for existing backup functionality
+        try {
+            saveProfile(profile);
+        } catch (storageError) {
+            console.warn("Local profile cache could not be updated:", storageError);
+        }
+
+        profileMessage.textContent = "Profile loaded successfully.";
+
+    } catch (error) {
+        console.error("Profile loading failed:", error);
+        profileMessage.textContent =
+            "Could not load profile from Supabase. Check your connection and permissions.";
+    }
 }
 
-profileForm.addEventListener("submit", (event) => {
+// Save profile to Supabase
+profileForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const profile = {
@@ -1124,15 +1154,37 @@ profileForm.addEventListener("submit", (event) => {
         return;
     }
 
+    profileMessage.textContent = "Saving profile...";
+
     try {
-        saveProfile(profile);
+        const { error } = await window.portfolioSupabase
+            .from("profiles")
+            .update({
+                ...profile,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", true);
+
+        if (error) {
+            throw error;
+        }
+
+        // Update local copy for existing backup functionality
+        try {
+            saveProfile(profile);
+        } catch (storageError) {
+            console.warn("Local profile cache could not be updated:", storageError);
+        }
+
         profileMessage.textContent =
-            "Profile saved successfully.";
+            "Profile saved successfully to Supabase.";
+
     } catch (error) {
         console.error("Profile save failed:", error);
         profileMessage.textContent =
-            "Could not save the profile. Check browser storage.";
+            "Could not save profile to Supabase. Check your connection and permissions.";
     }
 });
 
+// Load profile when dashboard code runs
 loadProfileIntoForm();
