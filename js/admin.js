@@ -977,6 +977,46 @@ async function loadSkillsFromSupabase() {
             "Could not load skills from Supabase. Check your connection and permissions.";
     }
 }
+// LOAD ACHIEVEMENTS FROM SUPABASE
+
+async function loadAchievementsFromSupabase() {
+    achievementMessage.textContent = "Loading achievements...";
+
+    try {
+        const { data, error } = await window.portfolioSupabase
+            .from("achievements")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        achievements = data.map((item) => ({
+            ...item,
+            year: item.date ? Number(item.date.slice(0, 4)) : null
+        }));
+
+        try {
+            saveAchievements(achievements);
+        } catch (storageError) {
+            console.warn(
+                "Local achievement cache could not be updated:",
+                storageError
+            );
+        }
+
+        renderAchievements();
+        renderStatistics();
+
+        achievementMessage.textContent =
+            `${achievements.length} achievement(s) loaded from Supabase.`;
+
+    } catch (error) {
+        console.error("Achievement loading failed:", error);
+
+        achievementMessage.textContent =
+            "Could not load achievements from Supabase. Check your connection and permissions.";
+    }
+}
 // 10. INITIALISE THE DASHBOARD
 
 loadProjectsFromSupabase();
