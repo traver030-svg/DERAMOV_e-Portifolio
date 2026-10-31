@@ -866,11 +866,51 @@ async function loadProjectsFromSupabase() {
             "Could not load projects from Supabase. Check your connection and permissions.";
     }
 }
+// LOAD SKILLS FROM SUPABASE
+
+async function loadSkillsFromSupabase() {
+    skillMessage.textContent = "Loading skills...";
+
+    try {
+        const { data, error } = await window.portfolioSupabase
+            .from("skills")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        skills = data.map((skill) => ({
+            ...skill,
+            level: skill.proficiency
+        }));
+
+        try {
+            saveSkills(skills);
+        } catch (storageError) {
+            console.warn(
+                "Local skill cache could not be updated:",
+                storageError
+            );
+        }
+
+        renderSkills();
+        renderStatistics();
+
+        skillMessage.textContent =
+            `${skills.length} skill(s) loaded from Supabase.`;
+
+    } catch (error) {
+        console.error("Skill loading failed:", error);
+
+        skillMessage.textContent =
+            "Could not load skills from Supabase. Check your connection and permissions.";
+    }
+}
 // 10. INITIALISE THE DASHBOARD
 
 loadProjectsFromSupabase();
+loadSkillsFromSupabase();
 
-renderSkills();
 renderAchievements();
 renderStatistics();
 
