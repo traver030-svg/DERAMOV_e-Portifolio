@@ -567,7 +567,9 @@ projectForm.addEventListener("submit", async (event) => {
 // ============================================
 
 
-skillForm.addEventListener("submit", (event) => {
+// ADD AND EDIT SKILLS — SUPABASE
+
+skillForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const name = document.getElementById("skill-name").value.trim();
@@ -579,55 +581,86 @@ skillForm.addEventListener("submit", (event) => {
         return;
     }
 
-    if (editingSkillId !== null) {
-        // Update the existing skill instead of creating a duplicate.
-        const index = skills.findIndex(
-            (skill) => skill.id === editingSkillId
-        );
-
-        if (index === -1) {
-            skillMessage.textContent =
-                "Could not find the skill to update. Please select Edit again.";
-            editingSkillId = null;
-            return;
-        }
-
-        skills[index] = {
-            ...skills[index],
-            name,
-            category,
-            level
-        };
-
-        saveSkills(skills);
-        skillMessage.textContent = `Skill "${name}" updated successfully.`;
-    } else {
-        // Normal Add Skill behaviour.
-        const newSkill = {
-            id: Date.now(),
-            name,
-            category,
-            level
-        };
-
-        skills.push(newSkill);
-        saveSkills(skills);
-        skillMessage.textContent = `Skill "${name}" added successfully.`;
-    }
-
-    editingSkillId = null;
-    skillForm.reset();
-
     const submitButton = skillForm.querySelector(
         'button[type="submit"]'
     );
 
-    if (submitButton) {
-        submitButton.textContent = "Add Skill";
-    }
+    if (submitButton) submitButton.disabled = true;
 
-    renderSkills();
-    renderStatistics();
+    skillMessage.textContent = "Saving skill...";
+
+    try {
+        const skillData = {
+            name,
+            category,
+            proficiency: level
+        };
+
+        if (editingSkillId !== null) {
+            const { data, error } = await window.portfolioSupabase
+                .from("skills")
+                .update(skillData)
+                .eq("id", editingSkillId)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            skills = skills.map((skill) =>
+                skill.id === editingSkillId
+                    ? {
+                        ...data,
+                        level: data.proficiency
+                    }
+                    : skill
+            );
+
+            skillMessage.textContent =
+                `Skill "${name}" updated successfully.`;
+
+        } else {
+            const { data, error } = await window.portfolioSupabase
+                .from("skills")
+                .insert(skillData)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            skills.unshift({
+                ...data,
+                level: data.proficiency
+            });
+
+            skillMessage.textContent =
+                `Skill "${name}" added successfully.`;
+        }
+
+        try {
+            saveSkills(skills);
+        } catch (storageError) {
+            console.warn("Local skill cache could not be updated:", storageError);
+        }
+
+        editingSkillId = null;
+        skillForm.reset();
+
+        if (submitButton) {
+            submitButton.textContent = "Add Skill";
+        }
+
+        renderSkills();
+        renderStatistics();
+
+    } catch (error) {
+        console.error("Skill save failed:", error);
+
+        skillMessage.textContent =
+            "Could not save skill to Supabase. Check your connection and permissions.";
+
+    } finally {
+        if (submitButton) submitButton.disabled = false;
+    }
 });
 
 // ============================================
