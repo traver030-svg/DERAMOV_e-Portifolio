@@ -137,19 +137,43 @@ loadPublicSkills();
 // 4. Display achievements
 const achievementsContainer = document.getElementById("achievements-container");
 
-getAchievements().forEach((achievement) => {
-    const card = document.createElement("article");
-    card.className = "achievement-card";
+// LOAD PUBLIC ACHIEVEMENTS FROM SUPABASE
 
-    const title = document.createElement("h3");
-    title.textContent = achievement.title;
+async function loadPublicAchievements() {
+    achievementsContainer.replaceChildren();
 
-    const description = document.createElement("p");
-    description.textContent = achievement.description;
+    try {
+        const { data, error } = await window.portfolioSupabase
+            .from("achievements")
+            .select("*")
+            .eq("published", true)
+            .order("created_at", { ascending: false });
 
-    const year = document.createElement("p");
-    year.textContent = "Year: " + achievement.year;
+        if (error) throw error;
 
-    card.append(title, description, year);
-    achievementsContainer.appendChild(card);
-});
+        data.forEach((achievement) => {
+            const card = document.createElement("article");
+            card.className = "achievement-card";
+
+            const title = document.createElement("h3");
+            title.textContent = achievement.title;
+
+            const description = document.createElement("p");
+            description.textContent = achievement.description;
+
+            const year = document.createElement("p");
+            const achievementYear = achievement.date
+                ? Number(achievement.date.slice(0, 4))
+                : "";
+
+            year.textContent = "Year: " + achievementYear;
+
+            card.append(title, description, year);
+            achievementsContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Public achievement loading failed:", error);
+    }
+}
+loadPublicAchievements();
