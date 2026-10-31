@@ -37,28 +37,58 @@ loadPublicProfile();
 // 2. Display projects
 const projectsContainer = document.getElementById("projects-container");
 
-getProjects().forEach((project) => {
-    const card = document.createElement("article");
-    card.className = "project-card";
+async function loadPublicProjects() {
+    try {
+        const { data: projects, error } = await window.portfolioSupabase
+            .from("projects")
+            .select("*")
+            .eq("published", true)
+            .order("created_at", { ascending: false });
 
-    const title = document.createElement("h3");
-    title.textContent = project.title;
+        if (error) throw error;
 
-    const category = document.createElement("p");
-    category.textContent = project.category;
+        projectsContainer.innerHTML = "";
 
-    const description = document.createElement("p");
-    description.textContent = project.description;
+        projects.forEach((project) => {
+            const card = document.createElement("article");
+            card.className = "project-card";
 
-    const technologies = document.createElement("p");
-    technologies.textContent = "Technologies: " + project.technologies.join(", ");
+            const title = document.createElement("h3");
+            title.textContent = project.title;
 
-    const status = document.createElement("p");
-    status.textContent = "Status: " + project.status;
+            const category = document.createElement("p");
+            category.textContent = project.category || "";
 
-    card.append(title, category, description, technologies, status);
-    projectsContainer.appendChild(card);
-});
+            const description = document.createElement("p");
+            description.textContent = project.description || "";
+
+            const technologies = document.createElement("p");
+            technologies.textContent =
+                "Technologies: " +
+                (project.technologies || []).join(", ");
+
+            const status = document.createElement("p");
+            status.textContent = "Status: " + (project.status || "");
+
+            card.append(
+                title,
+                category,
+                description,
+                technologies,
+                status
+            );
+
+            projectsContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Public project loading failed:", error);
+        projectsContainer.textContent =
+            "Projects could not be loaded. Please try again later.";
+    }
+}
+
+loadPublicProjects();
 
 
 // 3. Display skills
