@@ -203,21 +203,48 @@ editButton.addEventListener("click", () => {
         deleteButton.textContent = "Delete";
         deleteButton.className = "delete-button";
 
-        deleteButton.addEventListener("click", () => {
-            const confirmed = confirm(
-                `Delete project "${project.title}"?`
-            );
+        deleteButton.addEventListener("click", async () => {
+    const confirmed = confirm(
+        `Delete project "${project.title}"?`
+    );
 
-            if (!confirmed) return;
+    if (!confirmed) return;
 
-            projects = projects.filter(
-                (item) => item.id !== project.id
-            );
+    deleteButton.disabled = true;
 
+    try {
+        const { error } = await window.portfolioSupabase
+            .from("projects")
+            .delete()
+            .eq("id", project.id);
+
+        if (error) throw error;
+
+        projects = projects.filter(
+            (item) => item.id !== project.id
+        );
+
+        try {
             saveProjects(projects);
-            renderProjects();
-            renderStatistics();
-        });
+        } catch (storageError) {
+            console.warn("Local project cache could not be updated:", storageError);
+        }
+
+        renderProjects();
+        renderStatistics();
+
+        formMessage.textContent =
+            `Project "${project.title}" deleted successfully.`;
+
+    } catch (error) {
+        console.error("Project deletion failed:", error);
+
+        formMessage.textContent =
+            "Could not delete project from Supabase. Check your connection and permissions.";
+
+        deleteButton.disabled = false;
+    }
+});
 
         row.append(
     title,
