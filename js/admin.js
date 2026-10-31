@@ -1021,8 +1021,8 @@ async function loadAchievementsFromSupabase() {
 
 loadProjectsFromSupabase();
 loadSkillsFromSupabase();
+loadAchievementsFromSupabase();
 
-renderAchievements();
 renderStatistics();
 
 
