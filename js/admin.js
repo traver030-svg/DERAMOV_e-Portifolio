@@ -415,7 +415,9 @@ editButton.addEventListener("click", () => {
 // ============================================
 
 
-projectForm.addEventListener("submit", (event) => {
+// ADD AND EDIT PROJECTS — SUPABASE
+
+projectForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const title = document
@@ -442,60 +444,95 @@ projectForm.addEventListener("submit", (event) => {
         return;
     }
 
-    if (editingProjectId !== null) {
-        const index = projects.findIndex(
-            (project) => project.id === editingProjectId
-        );
-
-        if (index === -1) {
-            formMessage.textContent =
-                "Could not find the project to update. Please select Edit again.";
-            editingProjectId = null;
-            return;
-        }
-
-        projects[index] = {
-            ...projects[index],
-            title,
-            category,
-            description,
-            technologies,
-            status
-        };
-
-        saveProjects(projects);
-        formMessage.textContent =
-            `Project "${title}" updated successfully.`;
-    } else {
-        const newProject = {
-            id: Date.now(),
-            title,
-            category,
-            description,
-            technologies,
-            image: "",
-            status
-        };
-
-        projects.push(newProject);
-        saveProjects(projects);
-        formMessage.textContent =
-            `Project "${title}" added successfully.`;
-    }
-
-    editingProjectId = null;
-    projectForm.reset();
-
     const submitButton = projectForm.querySelector(
         'button[type="submit"]'
     );
 
-    if (submitButton) {
-        submitButton.textContent = "Add Project";
-    }
+    if (submitButton) submitButton.disabled = true;
 
-    renderProjects();
-    renderStatistics();
+    formMessage.textContent = "Saving project...";
+
+    try {
+        const projectData = {
+            title,
+            category,
+            description,
+            technologies,
+            status
+        };
+
+        if (editingProjectId !== null) {
+
+            const { data, error } = await window.portfolioSupabase
+                .from("projects")
+                .update(projectData)
+                .eq("id", editingProjectId)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const updatedProject = {
+                ...data,
+                image: data.image_url || ""
+            };
+
+            projects = projects.map((project) =>
+                project.id === editingProjectId
+                    ? updatedProject
+                    : project
+            );
+
+            formMessage.textContent =
+                `Project "${title}" updated successfully.`;
+
+        } else {
+
+            const { data, error } = await window.portfolioSupabase
+                .from("projects")
+                .insert(projectData)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            projects.unshift({
+                ...data,
+                image: data.image_url || ""
+            });
+
+            formMessage.textContent =
+                `Project "${title}" added successfully.`;
+        }
+
+        // Update the local backup-compatible copy.
+        try {
+            saveProjects(projects);
+        } catch (storageError) {
+            console.warn("Local project cache could not be updated:", storageError);
+        }
+
+        editingProjectId = null;
+        projectForm.reset();
+
+        if (submitButton) {
+            submitButton.textContent = "Add Project";
+        }
+
+        cancelProjectEdit.hidden = true;
+
+        renderProjects();
+        renderStatistics();
+
+    } catch (error) {
+        console.error("Project save failed:", error);
+
+        formMessage.textContent =
+            "Could not save project to Supabase. Check your connection and permissions.";
+
+    } finally {
+        if (submitButton) submitButton.disabled = false;
+    }
 });
 
 // ============================================
