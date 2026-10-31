@@ -1,6 +1,81 @@
 
 
 "use strict";
+// ============================================
+// ADMIN AUTHENTICATION
+// ============================================
+
+const loginSection = document.getElementById("admin-login");
+const dashboardSection = document.getElementById("admin-dashboard");
+const loginForm = document.getElementById("admin-login-form");
+const loginMessage = document.getElementById("login-message");
+
+async function checkAdminSession() {
+    const { data: { session }, error: sessionError } =
+        await window.portfolioSupabase.auth.getSession();
+
+    if (sessionError || !session) {
+        loginSection.hidden = false;
+        dashboardSection.hidden = true;
+        return;
+    }
+
+    const { data: { user }, error: userError } =
+        await window.portfolioSupabase.auth.getUser();
+
+    if (userError || !user) {
+        loginMessage.textContent = "Could not verify your account.";
+        loginSection.hidden = false;
+        dashboardSection.hidden = true;
+        return;
+    }
+
+    const { data: adminRecord, error: adminError } =
+        await window.portfolioSupabase
+            .from("admin_users")
+            .select("user_id")
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+    if (adminError || !adminRecord) {
+        await window.portfolioSupabase.auth.signOut();
+
+        loginMessage.textContent =
+            "Access denied. This account is not an administrator.";
+
+        loginSection.hidden = false;
+        dashboardSection.hidden = true;
+        return;
+    }
+
+    loginSection.hidden = true;
+    dashboardSection.hidden = false;
+}
+
+loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById("admin-email").value.trim();
+    const password = document.getElementById("admin-password").value;
+
+    loginMessage.textContent = "Signing in...";
+    console.log("Login form submitted.");
+
+    const { error } =
+        await window.portfolioSupabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if (error) {
+        loginMessage.textContent = error.message;
+        return;
+    }
+
+    await checkAdminSession();
+});
+
+checkAdminSession();
 
 // ============================================
 // 1. LOAD SAVED PORTFOLIO DATA

@@ -23,7 +23,42 @@
         </a>
     </header>
 
-    <main class="admin-main">
+    <!-- ADMIN LOGIN -->
+<section id="admin-login" class="panel admin-main">
+    <h2>Administrator Login</h2>
+    <p>Sign in to access your portfolio control centre.</p>
+
+    <form id="admin-login-form">
+        <label>
+            Email address
+            <input
+                type="email"
+                id="admin-email"
+                autocomplete="username"
+                required
+            >
+        </label>
+
+        <label>
+            Password
+            <input
+                type="password"
+                id="admin-password"
+                autocomplete="current-password"
+                required
+            >
+        </label>
+
+        <button type="submit" class="primary-button">
+            Sign In
+        </button>
+
+        <p id="login-message" role="status"></p>
+    </form>
+</section>
+
+<!-- PROTECTED ADMIN DASHBOARD -->
+<main class="admin-main" id="admin-dashboard" hidden>
 
         
 <!-- PROFILE MANAGEMENT -->
@@ -381,8 +416,15 @@
     </main>
 
     <!-- SHARED DATA AND DASHBOARD LOGIC -->
-    <script src="../js/data.js"></script>
-    <script src="../js/admin.js"></script>
+    <!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Portfolio data and database connection -->
+<script src="../js/data.js"></script>
+<script src="../js/supabase.js"></script>
+
+<!-- Admin application -->
+<script src="../js/admin.js"></script>
 </body>
 </html>
 
